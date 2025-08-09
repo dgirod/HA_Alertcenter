@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AppConfig, ViewMode, AlertType, Entity, EntityFilterType } from '../types';
+import { AppConfig, ViewMode, AlertType, Entity, EntityFilterType, AlertItem } from '../types';
 import { ICONS, MOCK_ENTITIES, MOCK_CUSTOM_ALERTS } from '../constants';
 import NormalView from './views/NormalView';
 import CompactView from './views/CompactView';
@@ -8,12 +8,6 @@ import TileView from './views/TileView';
 
 interface PreviewProps {
   config: AppConfig;
-}
-
-interface AlertItem {
-    icon: React.ReactNode;
-    title: string;
-    message: string;
 }
 
 const Preview: React.FC<PreviewProps> = ({ config }) => {

@@ -25,13 +25,10 @@ class AlertCenterCard extends LitElement {
   }
   
   static async getConfigElement() {
-    // Diese Methode teilt HA mit, dass es einen Editor gibt.
-    await import("./ha-alertcenter-card.js");
     return document.createElement("alert-center-card-editor");
   }
 
   static getStubConfig() {
-    // Dies liefert eine Standardkonfiguration, wenn der Benutzer die Karte hinzufügt.
     return {
       title: "Alert Center",
       view_mode: "normal",
@@ -55,18 +52,19 @@ class AlertCenterCard extends LitElement {
     if (!config) {
       throw new Error("Invalid configuration");
     }
+    
+    const defaultConfig = AlertCenterCard.getStubConfig();
 
     this._config = {
-      title: 'Alerts',
-      view_mode: 'normal',
-      battery_threshold: 20,
+      ...defaultConfig,
       ...config,
       alerts: {
-        battery: { enabled: true, icon: 'battery_low', ...config.alerts?.battery },
-        problem: { enabled: true, icon: 'warning', ...config.alerts?.problem },
-        custom: { enabled: true, icon: 'info', ...config.alerts?.custom },
+        battery: { ...defaultConfig.alerts.battery, ...(config.alerts?.battery || {}) },
+        problem: { ...defaultConfig.alerts.problem, ...(config.alerts?.problem || {}) },
+        custom: { ...defaultConfig.alerts.custom, ...(config.alerts?.custom || {}) },
       },
       entity_filters: config.entity_filters || [],
+      custom_alerts: config.custom_alerts || [],
     };
     
     if (this.hass) {
@@ -138,11 +136,13 @@ class AlertCenterCard extends LitElement {
     // Custom alerts from config
     if (this._config.alerts.custom.enabled && Array.isArray(this._config.custom_alerts)) {
         this._config.custom_alerts.forEach(alert => {
-            newAlerts.push({
-                icon: this._config.alerts.custom.icon,
-                title: alert.title,
-                message: alert.message,
-            });
+            if (alert.title && alert.message) {
+                newAlerts.push({
+                    icon: this._config.alerts.custom.icon,
+                    title: alert.title,
+                    message: alert.message,
+                });
+            }
         });
     }
 
@@ -434,43 +434,50 @@ class AlertCenterCardEditor extends LitElement {
         this._config = config;
     }
 
+    _setValue(obj, path, value) {
+        const keys = path.split('.');
+        const lastKey = keys.pop();
+        const lastObj = keys.reduce((a, b) => a[b] = a[b] || {}, obj);
+        lastObj[lastKey] = value;
+    }
+
     _valueChanged(ev) {
         if (!this._config || !this.hass) {
             return;
         }
-        const { target } = ev;
-        const newConfig = { ...this._config };
         
+        const { target } = ev;
+        const newConfig = JSON.parse(JSON.stringify(this._config));
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+
         if (target.configValue) {
-            if (target.configValue.includes('.')) {
-                 // Handle nested properties like alerts.battery.enabled
-                const [section, type, key] = target.configValue.split('.');
-                if (!newConfig[section]) newConfig[section] = {};
-                if (!newConfig[section][type]) newConfig[section][type] = {};
-                newConfig[section][type][key] = target.checked !== undefined ? target.checked : target.value;
-            } else {
-                 newConfig[target.configValue] = target.value;
-            }
+           this._setValue(newConfig, target.configValue, value);
         }
         
         this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
     }
 
     _handleListChange(listName, index, key, value) {
-        const newList = [...(this._config[listName] || [])];
+        const newConfig = JSON.parse(JSON.stringify(this._config));
+        const newList = [...(newConfig[listName] || [])];
         newList[index] = { ...newList[index], [key]: value };
-        this._valueChanged({ target: { configValue: listName, value: newList } });
+        newConfig[listName] = newList;
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
     }
 
     _addListItem(listName, newItem) {
-        const newList = [...(this._config[listName] || []), newItem];
-        this._valueChanged({ target: { configValue: listName, value: newList } });
+        const newConfig = JSON.parse(JSON.stringify(this._config));
+        const newList = [...(newConfig[listName] || []), newItem];
+        newConfig[listName] = newList;
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
     }
 
     _removeListItem(listName, index) {
-        const newList = [...(this._config[listName] || [])];
+        const newConfig = JSON.parse(JSON.stringify(this._config));
+        const newList = [...(newConfig[listName] || [])];
         newList.splice(index, 1);
-        this._valueChanged({ target: { configValue: listName, value: newList } });
+        newConfig[listName] = newList;
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
     }
 
     render() {

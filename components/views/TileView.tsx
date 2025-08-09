@@ -1,11 +1,6 @@
 
 import React from 'react';
-
-interface AlertItem {
-    icon: React.ReactNode;
-    title: string;
-    message: string;
-}
+import { AlertItem } from '../../types';
 
 interface TileViewProps {
     alerts: AlertItem[];
@@ -27,7 +22,7 @@ const TileView: React.FC<TileViewProps> = ({ alerts }) => {
             {alerts.map((alert, index) => (
                 <div key={index} className="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center">
                     <div className="mb-3 text-red-500">
-                        {React.cloneElement(alert.icon as React.ReactElement, { className: 'h-8 w-8' })}
+                        {React.isValidElement(alert.icon) ? React.cloneElement(alert.icon, { className: 'h-8 w-8' }) : alert.icon}
                     </div>
                     <p className="font-semibold text-slate-800 leading-tight">{alert.title}</p>
                     <p className="text-sm text-slate-600 mt-1">{alert.message}</p>

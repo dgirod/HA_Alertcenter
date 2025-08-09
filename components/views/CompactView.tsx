@@ -1,11 +1,6 @@
 
 import React from 'react';
-
-interface AlertItem {
-    icon: React.ReactNode;
-    title: string;
-    message: string;
-}
+import { AlertItem } from '../../types';
 
 interface CompactViewProps {
     alerts: AlertItem[];
@@ -27,7 +22,7 @@ const CompactView: React.FC<CompactViewProps> = ({ alerts }) => {
                 {alerts.map((alert, index) => (
                     <li key={index} className="flex items-center py-2">
                         <div className="mr-3 text-red-500 flex-shrink-0">
-                             {React.cloneElement(alert.icon as React.ReactElement, { className: 'h-5 w-5' })}
+                             {React.isValidElement(alert.icon) ? React.cloneElement(alert.icon, { className: 'h-5 w-5' }) : alert.icon}
                         </div>
                         <p className="text-sm text-slate-700 truncate" title={`${alert.title}: ${alert.message}`}>
                             <span className="font-semibold">{alert.title}:</span> {alert.message}

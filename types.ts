@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 export enum ViewMode {
   NORMAL = 'normal',
   COMPACT = 'compact',
@@ -43,4 +45,10 @@ export interface AppConfig {
     [AlertType.CUSTOM]: AlertConfig;
   };
   entityFilters: EntityFilter;
+}
+
+export interface AlertItem {
+    icon: React.ReactElement;
+    title: string;
+    message: string;
 }

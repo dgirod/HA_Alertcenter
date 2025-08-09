@@ -1,12 +1,6 @@
 
 import React from 'react';
-import { ICONS } from '../../constants';
-
-interface AlertItem {
-    icon: React.ReactNode;
-    title: string;
-    message: string;
-}
+import { AlertItem } from '../../types';
 
 interface NormalViewProps {
     alerts: AlertItem[];
