@@ -2,14 +2,14 @@
 
 Eine flexible und hochgradig anpassbare Karte für Home Assistant, um wichtige Warnungen wie niedrige Batteriestände, Entitätenprobleme und benutzerdefinierte Benachrichtigungen an einem zentralen Ort anzuzeigen.
 
-Das Herzstück dieses Projekts ist der **visuelle Konfigurator**, eine Web-Anwendung, die es Ihnen ermöglicht, das Erscheinungsbild und Verhalten Ihrer Alarmkarte ohne eine einzige Zeile YAML-Code zu gestalten.
+Dieses Projekt verfügt über einen **voll integrierten visuellen Editor**, der es Ihnen ermöglicht, das Erscheinungsbild und Verhalten Ihrer Alarmkarte direkt in der Home Assistant-Benutzeroberfläche zu gestalten – ohne eine einzige Zeile YAML-Code.
 
 ---
 
 ## ✨ Features
 
 - **Zentrales Alert-Dashboard**: Bündelt alle wichtigen Benachrichtigungen auf einer einzigen, übersichtlichen Karte.
-- **Visueller Konfigurator**: Kein manuelles Schreiben von YAML mehr. Konfigurieren Sie alles in einer benutzerfreundlichen Oberfläche mit Live-Vorschau.
+- **Integrierter visueller Editor**: Konfigurieren Sie alles direkt in der Home Assistant UI mit Live-Vorschau. Kein manuelles Schreiben von YAML erforderlich.
 - **Drei Darstellungsmodi**: Wählen Sie zwischen einer `Normal`-Ansicht, einer `Kompakt`-Ansicht oder einer `Kachel`-Ansicht, passend zu Ihrem Dashboard-Design.
 - **Flexible Alert-Typen**:
     - **Batterie-Warnungen**: Legen Sie einen globalen Schwellenwert fest, um über schwache Batterien informiert zu werden.
@@ -38,24 +38,16 @@ Dies ist der empfohlene Weg, um diese Karte zu installieren.
 
 ## 🛠️ Konfiguration
 
-Die Konfiguration besteht aus zwei Schritten:
-1.  Die visuelle Gestaltung der Karte mit dem **Online-Konfigurator** (den `.tsx`-Dateien in diesem Repo).
-2.  Das Hinzufügen einer "Manuell"-Karte zu Ihrem Lovelace-Dashboard mit der generierten Konfiguration.
-
-### Schritt 1: Konfigurator verwenden (Optional)
-
-1.  Öffnen Sie die `index.html` des Konfigurators in Ihrem Browser.
-2.  Nutzen Sie die Optionen auf der linken Seite, um Ihre Alert-Karte zu gestalten.
-3.  Die **Live-Vorschau** auf der rechten Seite zeigt Ihnen sofort, wie Ihre Karte aussehen wird.
-4.  Wenn Sie zufrieden sind, erstellen Sie basierend auf Ihren Einstellungen eine YAML-Konfiguration wie im Beispiel unten. *(Hinweis: Der "Konfiguration speichern"-Button ist in der Demo-Version ein Platzhalter.)*
-
-### Schritt 2: Karte zu Lovelace hinzufügen
-
-Sobald Sie Ihre Konfiguration haben, fügen Sie sie in Home Assistant ein:
+Nach der Installation können Sie die Karte direkt zu Ihrem Dashboard hinzufügen und konfigurieren.
 
 1.  Öffnen Sie das gewünschte Dashboard in Home Assistant und klicken Sie auf "Bearbeiten".
-2.  Klicken Sie auf "Karte hinzufügen" und wählen Sie die "Manuell"-Karte am Ende der Liste.
-3.  Fügen Sie Ihre Konfiguration ein.
+2.  Klicken Sie auf "Karte hinzufügen" und suchen Sie nach **"Alert Center Card"**.
+3.  Nutzen Sie den **visuellen Editor**, um alle Einstellungen nach Ihren Wünschen anzupassen. Die Vorschau wird live aktualisiert.
+4.  Klicken Sie auf "Speichern". Fertig!
+
+### YAML-Modus (für fortgeschrittene Benutzer)
+
+Sie können die Karte auch manuell über YAML konfigurieren, wenn Sie dies bevorzugen.
 
 **Beispiel-Konfiguration:**
 

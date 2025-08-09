@@ -1,4 +1,3 @@
-
 const LitElement = Object.getPrototypeOf(
   customElements.get("ha-panel-lovelace")
 );
@@ -14,12 +13,36 @@ const ICONS = {
   bell: html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>`,
 };
 
+const ICON_KEYS = Object.keys(ICONS);
+
 class AlertCenterCard extends LitElement {
   static get properties() {
     return {
       hass: { type: Object },
       _config: { type: Object, state: true },
       _alerts: { type: Array, state: true },
+    };
+  }
+  
+  static async getConfigElement() {
+    // Diese Methode teilt HA mit, dass es einen Editor gibt.
+    await import("./ha-alertcenter-card.js");
+    return document.createElement("alert-center-card-editor");
+  }
+
+  static getStubConfig() {
+    // Dies liefert eine Standardkonfiguration, wenn der Benutzer die Karte hinzufügt.
+    return {
+      title: "Alert Center",
+      view_mode: "normal",
+      battery_threshold: 20,
+      alerts: {
+        battery: { enabled: true, icon: "battery_low" },
+        problem: { enabled: true, icon: "warning" },
+        custom: { enabled: false, icon: "info" },
+      },
+      entity_filters: [],
+      custom_alerts: [],
     };
   }
 
@@ -130,17 +153,17 @@ class AlertCenterCard extends LitElement {
   _renderNoAlerts() {
     const messages = {
       normal: {
-        icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+        icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
         title: "Alles in Ordnung",
         message: "Keine aktiven Alerts vorhanden."
       },
       compact: {
-        icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+        icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
         title: "Keine Alerts",
         message: ""
       },
       tile: {
-        icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+        icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
         title: "Alles in Ordnung",
         message: "Keine aktiven Alerts vorhanden."
       }
@@ -399,4 +422,227 @@ class AlertCenterCard extends LitElement {
   }
 }
 
+class AlertCenterCardEditor extends LitElement {
+    static get properties() {
+        return {
+            hass: { type: Object },
+            _config: { type: Object, state: true },
+        };
+    }
+
+    setConfig(config) {
+        this._config = config;
+    }
+
+    _valueChanged(ev) {
+        if (!this._config || !this.hass) {
+            return;
+        }
+        const { target } = ev;
+        const newConfig = { ...this._config };
+        
+        if (target.configValue) {
+            if (target.configValue.includes('.')) {
+                 // Handle nested properties like alerts.battery.enabled
+                const [section, type, key] = target.configValue.split('.');
+                if (!newConfig[section]) newConfig[section] = {};
+                if (!newConfig[section][type]) newConfig[section][type] = {};
+                newConfig[section][type][key] = target.checked !== undefined ? target.checked : target.value;
+            } else {
+                 newConfig[target.configValue] = target.value;
+            }
+        }
+        
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
+    }
+
+    _handleListChange(listName, index, key, value) {
+        const newList = [...(this._config[listName] || [])];
+        newList[index] = { ...newList[index], [key]: value };
+        this._valueChanged({ target: { configValue: listName, value: newList } });
+    }
+
+    _addListItem(listName, newItem) {
+        const newList = [...(this._config[listName] || []), newItem];
+        this._valueChanged({ target: { configValue: listName, value: newList } });
+    }
+
+    _removeListItem(listName, index) {
+        const newList = [...(this._config[listName] || [])];
+        newList.splice(index, 1);
+        this._valueChanged({ target: { configValue: listName, value: newList } });
+    }
+
+    render() {
+        if (!this.hass || !this._config) {
+            return html``;
+        }
+
+        const alertTypes = [
+            { key: "battery", name: "Batterie-Warnungen" },
+            { key: "problem", name: "Entitäten-Probleme" },
+            { key: "custom", name: "Benutzerdefinierte Alerts" },
+        ];
+        
+        return html`
+            <div class="card-config">
+                <ha-textfield
+                    label="Titel (Optional)"
+                    .value=${this._config.title || ""}
+                    .configValue=${"title"}
+                    @input=${this._valueChanged}
+                ></ha-textfield>
+
+                <ha-select
+                    label="Ansichtsmodus"
+                    .value=${this._config.view_mode || 'normal'}
+                    .configValue=${'view_mode'}
+                    @selected=${this._valueChanged}
+                    @closed=${(ev) => ev.stopPropagation()}
+                >
+                    <mwc-list-item value="normal">Normal</mwc-list-item>
+                    <mwc-list-item value="compact">Kompakt</mwc-list-item>
+                    <mwc-list-item value="tile">Kachel</mwc-list-item>
+                </ha-select>
+                
+                <div class="section-title">Alert-Typen</div>
+                ${alertTypes.map(type => html`
+                    <div class="alert-type-config">
+                        <div class="alert-header">
+                            <label>${type.name}</label>
+                            <ha-switch
+                                .checked=${this._config.alerts?.[type.key]?.enabled !== false}
+                                .configValue=${`alerts.${type.key}.enabled`}
+                                @change=${this._valueChanged}
+                            ></ha-switch>
+                        </div>
+                        ${this._config.alerts?.[type.key]?.enabled !== false ? html`
+                            <div class="alert-options">
+                                ${type.key === 'battery' ? html`
+                                    <div class="slider-container">
+                                        <label>Warnschwelle: ${this._config.battery_threshold || 20}%</label>
+                                        <ha-slider
+                                            min="0"
+                                            max="100"
+                                            step="1"
+                                            pin
+                                            .value=${this._config.battery_threshold || 20}
+                                            .configValue=${'battery_threshold'}
+                                            @change=${this._valueChanged}
+                                        ></ha-slider>
+                                    </div>
+                                ` : ''}
+                                <ha-select
+                                    label="Icon"
+                                    .value=${this._config.alerts?.[type.key]?.icon}
+                                    .configValue=${`alerts.${type.key}.icon`}
+                                    @selected=${this._valueChanged}
+                                    @closed=${(ev) => ev.stopPropagation()}
+                                >
+                                    ${ICON_KEYS.map(icon => html`<mwc-list-item value=${icon}>${icon}</mwc-list-item>`)}
+                                </ha-select>
+                            </div>
+                        ` : ''}
+                    </div>
+                `)}
+                
+                <div class="section-title">Benutzerdefinierte Alerts</div>
+                ${(this._config.custom_alerts || []).map((alert, index) => html`
+                    <div class="list-item">
+                        <ha-textfield
+                            label="Titel"
+                            .value=${alert.title}
+                            @input=${e => this._handleListChange('custom_alerts', index, 'title', e.target.value)}
+                        ></ha-textfield>
+                        <ha-textfield
+                            label="Nachricht"
+                            .value=${alert.message}
+                            @input=${e => this._handleListChange('custom_alerts', index, 'message', e.target.value)}
+                        ></ha-textfield>
+                        <ha-icon-button .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"} @click=${() => this._removeListItem('custom_alerts', index)}></ha-icon-button>
+                    </div>
+                `)}
+                <mwc-button @click=${() => this._addListItem('custom_alerts', {title: '', message: ''})}>Alert hinzufügen</mwc-button>
+                
+                <div class="section-title">Entitäten-Filter</div>
+                ${(this._config.entity_filters || []).map((filter, index) => html`
+                    <div class="list-item">
+                         <ha-entity-picker
+                            .hass=${this.hass}
+                            .value=${filter.entity}
+                            @value-changed=${e => this._handleListChange('entity_filters', index, 'entity', e.detail.value)}
+                         ></ha-entity-picker>
+                         <ha-select
+                            label="Filter"
+                            .value=${filter.filter}
+                            @selected=${e => this._handleListChange('entity_filters', index, 'filter', e.target.value)}
+                            @closed=${(ev) => ev.stopPropagation()}
+                         >
+                            <mwc-list-item value="include">Einschließen</mwc-list-item>
+                            <mwc-list-item value="exclude">Ausschließen</mwc-list-item>
+                         </ha-select>
+                        <ha-icon-button .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"} @click=${() => this._removeListItem('entity_filters', index)}></ha-icon-button>
+                    </div>
+                `)}
+                 <mwc-button @click=${() => this._addListItem('entity_filters', {entity: '', filter: 'exclude'})}>Filter hinzufügen</mwc-button>
+            </div>
+        `;
+    }
+
+    static get styles() {
+        return css`
+            .card-config {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+            .section-title {
+                margin-top: 8px;
+                font-size: 1.2em;
+                font-weight: 500;
+                border-bottom: 1px solid var(--divider-color);
+                padding-bottom: 8px;
+            }
+            .alert-type-config {
+                border: 1px solid var(--divider-color);
+                padding: 12px;
+                border-radius: 8px;
+            }
+            .alert-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-weight: 500;
+            }
+            .alert-options {
+                padding-top: 12px;
+                margin-top: 12px;
+                border-top: 1px solid var(--divider-color);
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .slider-container {
+                display: flex;
+                flex-direction: column;
+            }
+            .list-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .list-item ha-textfield, .list-item ha-entity-picker, .list-item ha-select {
+                flex-grow: 1;
+            }
+        `;
+    }
+}
+
+customElements.define("alert-center-card-editor", AlertCenterCardEditor);
 customElements.define("alert-center-card", AlertCenterCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: "alert-center-card",
+    name: "Alert Center Card",
+    description: "Eine Karte zur Anzeige von Batterie-, Problem- und benutzerdefinierten Alerts.",
+});
