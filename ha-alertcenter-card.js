@@ -638,11 +638,16 @@ class AlertCenterCardEditor extends LitElement {
     }
 }
 
-customElements.define("alert-center-card-editor", AlertCenterCardEditor);
-customElements.define("alert-center-card", AlertCenterCard);
-window.customCards = window.customCards || [];
-window.customCards.push({
+if (!customElements.get("alert-center-card-editor")) {
+  customElements.define("alert-center-card-editor", AlertCenterCardEditor);
+}
+
+if (!customElements.get("alert-center-card")) {
+  customElements.define("alert-center-card", AlertCenterCard);
+  window.customCards = window.customCards || [];
+  window.customCards.push({
     type: "alert-center-card",
     name: "Alert Center Card",
     description: "Eine Karte zur Anzeige von Batterie-, Problem- und benutzerdefinierten Alerts.",
-});
+  });
+}
