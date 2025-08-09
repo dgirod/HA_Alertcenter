@@ -1,5 +1,0 @@
-{
-  "name": "Home Assistant Alert Configurator",
-  "description": "A configuration UI for a Home Assistant integration that displays alerts for low battery levels, entity problems, and custom alerts. This tool allows for no-code setup of inclusion/exclusion lists, alert thresholds, and visual appearance.",
-  "requestFramePermissions": []
-}
