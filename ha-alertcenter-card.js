@@ -85,27 +85,35 @@ class AlertCenterCard extends LitElement {
     }
 
     const newAlerts = [];
-    const entities = Object.values(this.hass.states);
+    const allEntities = Object.values(this.hass.states);
 
+    // This is the new, robust filtering logic.
+    const validFilters = this._config.entity_filters?.filter(f => f.entity && f.filter) || [];
+    
+    const includedEntities = validFilters
+        .filter(f => f.filter === 'include')
+        .map(f => f.entity);
+        
     const excludedEntities = new Set(
-        this._config.entity_filters
+        validFilters
             .filter(f => f.filter === 'exclude')
             .map(f => f.entity)
     );
-    const includedEntities = this._config.entity_filters
-        .filter(f => f.filter === 'include')
-        .map(f => f.entity);
-    
-    const filteredEntities = entities.filter(entity => {
-        if (excludedEntities.has(entity.entity_id)) {
-            return false;
-        }
-        if (includedEntities.length > 0 && !includedEntities.includes(entity.entity_id)) {
-            return false;
-        }
-        return true;
-    });
 
+    let entitiesToCheck;
+
+    // 1. Determine the base list of entities.
+    // If an 'include' list exists, we ONLY check entities on that list.
+    if (includedEntities.length > 0) {
+        entitiesToCheck = allEntities.filter(entity => includedEntities.includes(entity.entity_id));
+    } else {
+        // Otherwise, we start with all entities in Home Assistant.
+        entitiesToCheck = allEntities;
+    }
+
+    // 2. From this base list, remove any excluded entities.
+    const filteredEntities = entitiesToCheck.filter(entity => !excludedEntities.has(entity.entity_id));
+    
     // Battery Alerts
     if (this._config.alerts.battery.enabled) {
       filteredEntities.forEach(entity => {
