@@ -177,11 +177,9 @@ class AlertCenterCard extends LitElement {
 
     const newAlerts = [];
     
-    // --- This is the new, robust filtering logic ---
     const allEntities = Object.values(this.hass.states);
     const validFilters = this._config.entity_filters?.filter(f => f.entity && f.filter) || [];
     
-    // 1. Get lists of entities to specifically include or exclude.
     const includedEntityIds = validFilters
         .filter(f => f.filter === 'include')
         .map(f => f.entity);
@@ -193,25 +191,27 @@ class AlertCenterCard extends LitElement {
     );
 
     let baseEntities;
-
-    // 2. Determine the base list of entities to check.
-    // If an 'include' list exists, we ONLY check entities on that list.
     if (includedEntityIds.length > 0) {
         baseEntities = allEntities.filter(entity => includedEntityIds.includes(entity.entity_id));
     } else {
-        // Otherwise, we start with all entities in Home Assistant.
         baseEntities = allEntities;
     }
-
-    // 3. From this base list, remove any excluded entities.
     const filteredEntities = baseEntities.filter(entity => !excludedEntityIds.has(entity.entity_id));
-    
-    // --- Generate alerts from the correctly filtered list ---
     
     // Battery Alerts
     if (this._config.alerts.battery.enabled) {
       filteredEntities.forEach(entity => {
-        const batteryLevel = entity.attributes.battery_level ?? entity.attributes.battery;
+        // --- Improved Battery Detection ---
+        let batteryLevel = entity.attributes.battery_level ?? entity.attributes.battery;
+        // Also check the state if the device_class is 'battery'
+        if (batteryLevel === undefined && entity.attributes.device_class === 'battery') {
+          const stateAsNumber = parseFloat(entity.state);
+          if (!isNaN(stateAsNumber)) {
+            batteryLevel = stateAsNumber;
+          }
+        }
+        // --- End of Improvement ---
+
         if (batteryLevel !== undefined && batteryLevel <= this._config.battery_threshold) {
           newAlerts.push({
             icon: this._config.alerts.battery.icon,
@@ -542,7 +542,20 @@ class AlertCenterCardEditor extends LitElement {
         this._config = config;
     }
 
-    // Helper to safely set nested values in the config object.
+    // --- CONFIGURATION CHANGE HANDLER (BUG FIX) ---
+    // Centralized function to handle all config changes.
+    // This ensures the editor's internal state is always up-to-date
+    // and a complete, valid config is dispatched to Lovelace.
+    _handleConfigChange(newConfig) {
+        this._config = newConfig;
+        this.dispatchEvent(new CustomEvent("config-changed", {
+            bubbles: true,
+            composed: true,
+            detail: { config: newConfig }
+        }));
+    }
+
+    // Helper to safely set nested values in a cloned config object.
     _setValue(obj, path, value) {
         const keys = path.split('.');
         const lastKey = keys.pop();
@@ -567,7 +580,7 @@ class AlertCenterCardEditor extends LitElement {
            this._setValue(newConfig, target.configValue, value);
         }
         
-        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
+        this._handleConfigChange(newConfig);
     }
 
     _handleListChange(listName, index, key, value) {
@@ -575,14 +588,14 @@ class AlertCenterCardEditor extends LitElement {
         const newList = [...(newConfig[listName] || [])];
         newList[index] = { ...newList[index], [key]: value };
         newConfig[listName] = newList;
-        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
+        this._handleConfigChange(newConfig);
     }
 
     _addListItem(listName, newItem) {
         const newConfig = JSON.parse(JSON.stringify(this._config));
         const newList = [...(newConfig[listName] || []), newItem];
         newConfig[listName] = newList;
-        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
+        this._handleConfigChange(newConfig);
     }
 
     _removeListItem(listName, index) {
@@ -590,7 +603,7 @@ class AlertCenterCardEditor extends LitElement {
         const newList = [...(newConfig[listName] || [])];
         newList.splice(index, 1);
         newConfig[listName] = newList;
-        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: newConfig } }));
+        this._handleConfigChange(newConfig);
     }
 
     render() {
