@@ -4,6 +4,7 @@ const LitElement = Object.getPrototypeOf(
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
+// --- ICONS ---
 const ICONS = {
   battery_alert: html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-1.28-1.28A9 9 0 004.28 17.72L3 19" /></svg>`,
   battery_low: html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728m-12.728 0a9 9 0 010-12.728m12.728 0L5.636 18.364M9 12a3 3 0 116 0 3 3 0 01-6 0z" /></svg>`,
@@ -12,10 +13,12 @@ const ICONS = {
   lightbulb: html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>`,
   bell: html`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>`,
 };
-
 const ICON_KEYS = Object.keys(ICONS);
+const MDI_DELETE_PATH = "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z";
 
 class AlertCenterCard extends LitElement {
+
+  // --- INTERNAL PROPERTIES ---
   static get properties() {
     return {
       hass: { type: Object },
@@ -23,7 +26,83 @@ class AlertCenterCard extends LitElement {
       _alerts: { type: Array, state: true },
     };
   }
+
+  // --- TRANSLATIONS ---
+  static get translations() {
+    return {
+      'en': {
+        'card.title_default': 'Alert Center',
+        'card.description': 'A card to display battery, problem, and custom alerts.',
+        'no_alerts.normal.title': 'All Clear',
+        'no_alerts.normal.message': 'No active alerts.',
+        'no_alerts.compact.title': 'No Alerts',
+        'battery_alert.message': 'Battery level low ({level}%)',
+        'problem_alert.message': 'Problem: Unavailable',
+        'editor.title': 'Title (Optional)',
+        'editor.view_mode': 'View Mode',
+        'editor.view_mode.normal': 'Normal',
+        'editor.view_mode.compact': 'Compact',
+        'editor.view_mode.tile': 'Tile',
+        'editor.alert_types_title': 'Alert Types',
+        'editor.alert_types.battery': 'Battery Warnings',
+        'editor.alert_types.problem': 'Entity Problems',
+        'editor.alert_types.custom': 'Custom Alerts',
+        'editor.battery_threshold': 'Warning Threshold: {value}%',
+        'editor.icon': 'Icon',
+        'editor.custom_alerts_title': 'Custom Alerts',
+        'editor.custom_alerts.title': 'Title',
+        'editor.custom_alerts.message': 'Message',
+        'editor.custom_alerts.add': 'Add Alert',
+        'editor.entity_filters_title': 'Entity Filters',
+        'editor.entity_filters.filter': 'Filter',
+        'editor.entity_filters.include': 'Include',
+        'editor.entity_filters.exclude': 'Exclude',
+        'editor.entity_filters.add': 'Add Filter',
+      },
+      'de': {
+        'card.title_default': 'Alert Center',
+        'card.description': 'Eine Karte zur Anzeige von Batterie-, Problem- und benutzerdefinierten Alerts.',
+        'no_alerts.normal.title': 'Alles in Ordnung',
+        'no_alerts.normal.message': 'Keine aktiven Alerts vorhanden.',
+        'no_alerts.compact.title': 'Keine Alerts',
+        'battery_alert.message': 'Batteriestand niedrig ({level}%)',
+        'problem_alert.message': 'Problem: Nicht erreichbar',
+        'editor.title': 'Titel (Optional)',
+        'editor.view_mode': 'Ansichtsmodus',
+        'editor.view_mode.normal': 'Normal',
+        'editor.view_mode.compact': 'Kompakt',
+        'editor.view_mode.tile': 'Kachel',
+        'editor.alert_types_title': 'Alert-Typen',
+        'editor.alert_types.battery': 'Batterie-Warnungen',
+        'editor.alert_types.problem': 'Entitäten-Probleme',
+        'editor.alert_types.custom': 'Benutzerdefinierte Alerts',
+        'editor.battery_threshold': 'Warnschwelle: {value}%',
+        'editor.icon': 'Icon',
+        'editor.custom_alerts_title': 'Benutzerdefinierte Alerts',
+        'editor.custom_alerts.title': 'Titel',
+        'editor.custom_alerts.message': 'Nachricht',
+        'editor.custom_alerts.add': 'Alert hinzufügen',
+        'editor.entity_filters_title': 'Entitäten-Filter',
+        'editor.entity_filters.filter': 'Filter',
+        'editor.entity_filters.include': 'Einschließen',
+        'editor.entity_filters.exclude': 'Ausschließen',
+        'editor.entity_filters.add': 'Filter hinzufügen',
+      }
+    }
+  }
+
+  localize(stringKey, search = '', replace = '') {
+      const lang = this.hass?.locale?.language || 'en';
+      const translations = AlertCenterCard.translations;
+      let translated = translations[lang]?.[stringKey] || translations['en']?.[stringKey] || stringKey;
+
+      if (search && replace) {
+          translated = translated.replace(search, replace);
+      }
+      return translated;
+  }
   
+  // --- CORE LIFECYCLE ---
   static async getConfigElement() {
     return document.createElement("alert-center-card-editor");
   }
@@ -47,25 +126,36 @@ class AlertCenterCard extends LitElement {
     super();
     this._alerts = [];
   }
+  
+  _deepMerge(target, source) {
+    const output = { ...target };
+    if (this._isObject(target) && this._isObject(source)) {
+      Object.keys(source).forEach(key => {
+        if (this._isObject(source[key])) {
+          if (!(key in target)) {
+            Object.assign(output, { [key]: source[key] });
+          } else {
+            output[key] = this._deepMerge(target[key], source[key]);
+          }
+        } else {
+          Object.assign(output, { [key]: source[key] });
+        }
+      });
+    }
+    return output;
+  }
 
+  _isObject(item) {
+    return (item && typeof item === 'object' && !Array.isArray(item));
+  }
+  
   setConfig(config) {
     if (!config) {
       throw new Error("Invalid configuration");
     }
     
     const defaultConfig = AlertCenterCard.getStubConfig();
-
-    this._config = {
-      ...defaultConfig,
-      ...config,
-      alerts: {
-        battery: { ...defaultConfig.alerts.battery, ...(config.alerts?.battery || {}) },
-        problem: { ...defaultConfig.alerts.problem, ...(config.alerts?.problem || {}) },
-        custom: { ...defaultConfig.alerts.custom, ...(config.alerts?.custom || {}) },
-      },
-      entity_filters: config.entity_filters || [],
-      custom_alerts: config.custom_alerts || [],
-    };
+    this._config = this._deepMerge(defaultConfig, config);
     
     if (this.hass) {
         this.generateAlerts();
@@ -78,6 +168,7 @@ class AlertCenterCard extends LitElement {
     }
   }
 
+  // --- ALERT GENERATION LOGIC ---
   generateAlerts() {
     if (!this.hass || !this._config) {
       this._alerts = [];
@@ -85,34 +176,37 @@ class AlertCenterCard extends LitElement {
     }
 
     const newAlerts = [];
+    
+    // --- This is the new, robust filtering logic ---
     const allEntities = Object.values(this.hass.states);
-
-    // This is the new, robust filtering logic.
     const validFilters = this._config.entity_filters?.filter(f => f.entity && f.filter) || [];
     
-    const includedEntities = validFilters
+    // 1. Get lists of entities to specifically include or exclude.
+    const includedEntityIds = validFilters
         .filter(f => f.filter === 'include')
         .map(f => f.entity);
         
-    const excludedEntities = new Set(
+    const excludedEntityIds = new Set(
         validFilters
             .filter(f => f.filter === 'exclude')
             .map(f => f.entity)
     );
 
-    let entitiesToCheck;
+    let baseEntities;
 
-    // 1. Determine the base list of entities.
+    // 2. Determine the base list of entities to check.
     // If an 'include' list exists, we ONLY check entities on that list.
-    if (includedEntities.length > 0) {
-        entitiesToCheck = allEntities.filter(entity => includedEntities.includes(entity.entity_id));
+    if (includedEntityIds.length > 0) {
+        baseEntities = allEntities.filter(entity => includedEntityIds.includes(entity.entity_id));
     } else {
         // Otherwise, we start with all entities in Home Assistant.
-        entitiesToCheck = allEntities;
+        baseEntities = allEntities;
     }
 
-    // 2. From this base list, remove any excluded entities.
-    const filteredEntities = entitiesToCheck.filter(entity => !excludedEntities.has(entity.entity_id));
+    // 3. From this base list, remove any excluded entities.
+    const filteredEntities = baseEntities.filter(entity => !excludedEntityIds.has(entity.entity_id));
+    
+    // --- Generate alerts from the correctly filtered list ---
     
     // Battery Alerts
     if (this._config.alerts.battery.enabled) {
@@ -122,7 +216,7 @@ class AlertCenterCard extends LitElement {
           newAlerts.push({
             icon: this._config.alerts.battery.icon,
             title: entity.attributes.friendly_name || entity.entity_id,
-            message: `Batteriestand niedrig (${batteryLevel}%)`
+            message: this.localize('battery_alert.message', '{level}', batteryLevel)
           });
         }
       });
@@ -135,7 +229,7 @@ class AlertCenterCard extends LitElement {
           newAlerts.push({
             icon: this._config.alerts.problem.icon,
             title: entity.attributes.friendly_name || entity.entity_id,
-            message: 'Problem: Nicht erreichbar'
+            message: this.localize('problem_alert.message')
           });
         }
       });
@@ -154,26 +248,26 @@ class AlertCenterCard extends LitElement {
         });
     }
 
-
     this._alerts = newAlerts;
   }
   
+  // --- RENDER METHODS ---
   _renderNoAlerts() {
     const messages = {
       normal: {
         icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
-        title: "Alles in Ordnung",
-        message: "Keine aktiven Alerts vorhanden."
+        title: this.localize('no_alerts.normal.title'),
+        message: this.localize('no_alerts.normal.message'),
       },
       compact: {
         icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
-        title: "Keine Alerts",
+        title: this.localize('no_alerts.compact.title'),
         message: ""
       },
       tile: {
         icon: html`<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
-        title: "Alles in Ordnung",
-        message: "Keine aktiven Alerts vorhanden."
+        title: this.localize('no_alerts.normal.title'),
+        message: this.localize('no_alerts.normal.message'),
       }
     }
     const view = this._config.view_mode;
@@ -257,7 +351,7 @@ class AlertCenterCard extends LitElement {
     }
 
     return html`
-      <ha-card .header=${this._config.title}>
+      <ha-card .header=${this._config.title || this.localize('card.title_default')}>
         <div class="card-content">
           ${content}
         </div>
@@ -277,6 +371,7 @@ class AlertCenterCard extends LitElement {
     }
   }
 
+  // --- STYLES ---
   static get styles() {
     return css`
       .card-content {
@@ -437,11 +532,17 @@ class AlertCenterCardEditor extends LitElement {
             _config: { type: Object, state: true },
         };
     }
+    
+    // Use the main card's localization function
+    get _localize() {
+        return AlertCenterCard.prototype.localize.bind(this);
+    }
 
     setConfig(config) {
         this._config = config;
     }
 
+    // Helper to safely set nested values in the config object.
     _setValue(obj, path, value) {
         const keys = path.split('.');
         const lastKey = keys.pop();
@@ -456,7 +557,11 @@ class AlertCenterCardEditor extends LitElement {
         
         const { target } = ev;
         const newConfig = JSON.parse(JSON.stringify(this._config));
-        const value = target.type === 'checkbox' ? target.checked : target.value;
+        
+        let value = target.value;
+        if (target.type === 'checkbox') {
+            value = target.checked;
+        }
 
         if (target.configValue) {
            this._setValue(newConfig, target.configValue, value);
@@ -494,33 +599,33 @@ class AlertCenterCardEditor extends LitElement {
         }
 
         const alertTypes = [
-            { key: "battery", name: "Batterie-Warnungen" },
-            { key: "problem", name: "Entitäten-Probleme" },
-            { key: "custom", name: "Benutzerdefinierte Alerts" },
+            { key: "battery", name: this._localize('editor.alert_types.battery') },
+            { key: "problem", name: this._localize('editor.alert_types.problem') },
+            { key: "custom", name: this._localize('editor.alert_types.custom') },
         ];
         
         return html`
             <div class="card-config">
                 <ha-textfield
-                    label="Titel (Optional)"
+                    label=${this._localize('editor.title')}
                     .value=${this._config.title || ""}
                     .configValue=${"title"}
-                    @input=${this._valueChanged}
+                    @change=${this._valueChanged}
                 ></ha-textfield>
 
                 <ha-select
-                    label="Ansichtsmodus"
+                    label=${this._localize('editor.view_mode')}
                     .value=${this._config.view_mode || 'normal'}
                     .configValue=${'view_mode'}
                     @selected=${this._valueChanged}
                     @closed=${(ev) => ev.stopPropagation()}
                 >
-                    <mwc-list-item value="normal">Normal</mwc-list-item>
-                    <mwc-list-item value="compact">Kompakt</mwc-list-item>
-                    <mwc-list-item value="tile">Kachel</mwc-list-item>
+                    <mwc-list-item value="normal">${this._localize('editor.view_mode.normal')}</mwc-list-item>
+                    <mwc-list-item value="compact">${this._localize('editor.view_mode.compact')}</mwc-list-item>
+                    <mwc-list-item value="tile">${this._localize('editor.view_mode.tile')}</mwc-list-item>
                 </ha-select>
                 
-                <div class="section-title">Alert-Typen</div>
+                <div class="section-title">${this._localize('editor.alert_types_title')}</div>
                 ${alertTypes.map(type => html`
                     <div class="alert-type-config">
                         <div class="alert-header">
@@ -535,7 +640,7 @@ class AlertCenterCardEditor extends LitElement {
                             <div class="alert-options">
                                 ${type.key === 'battery' ? html`
                                     <div class="slider-container">
-                                        <label>Warnschwelle: ${this._config.battery_threshold || 20}%</label>
+                                        <label>${this._localize('editor.battery_threshold', '{value}', this._config.battery_threshold || 20)}</label>
                                         <ha-slider
                                             min="0"
                                             max="100"
@@ -548,7 +653,7 @@ class AlertCenterCardEditor extends LitElement {
                                     </div>
                                 ` : ''}
                                 <ha-select
-                                    label="Icon"
+                                    label=${this._localize('editor.icon')}
                                     .value=${this._config.alerts?.[type.key]?.icon}
                                     .configValue=${`alerts.${type.key}.icon`}
                                     @selected=${this._valueChanged}
@@ -561,25 +666,25 @@ class AlertCenterCardEditor extends LitElement {
                     </div>
                 `)}
                 
-                <div class="section-title">Benutzerdefinierte Alerts</div>
+                <div class="section-title">${this._localize('editor.custom_alerts_title')}</div>
                 ${(this._config.custom_alerts || []).map((alert, index) => html`
                     <div class="list-item">
                         <ha-textfield
-                            label="Titel"
+                            label=${this._localize('editor.custom_alerts.title')}
                             .value=${alert.title}
-                            @input=${e => this._handleListChange('custom_alerts', index, 'title', e.target.value)}
+                            @change=${e => this._handleListChange('custom_alerts', index, 'title', e.target.value)}
                         ></ha-textfield>
                         <ha-textfield
-                            label="Nachricht"
+                            label=${this._localize('editor.custom_alerts.message')}
                             .value=${alert.message}
-                            @input=${e => this._handleListChange('custom_alerts', index, 'message', e.target.value)}
+                            @change=${e => this._handleListChange('custom_alerts', index, 'message', e.target.value)}
                         ></ha-textfield>
-                        <ha-icon-button .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"} @click=${() => this._removeListItem('custom_alerts', index)}></ha-icon-button>
+                        <ha-icon-button .path=${MDI_DELETE_PATH} @click=${() => this._removeListItem('custom_alerts', index)}></ha-icon-button>
                     </div>
                 `)}
-                <mwc-button @click=${() => this._addListItem('custom_alerts', {title: '', message: ''})}>Alert hinzufügen</mwc-button>
+                <mwc-button @click=${() => this._addListItem('custom_alerts', {title: '', message: ''})}>${this._localize('editor.custom_alerts.add')}</mwc-button>
                 
-                <div class="section-title">Entitäten-Filter</div>
+                <div class="section-title">${this._localize('editor.entity_filters_title')}</div>
                 ${(this._config.entity_filters || []).map((filter, index) => html`
                     <div class="list-item">
                          <ha-entity-picker
@@ -588,18 +693,18 @@ class AlertCenterCardEditor extends LitElement {
                             @value-changed=${e => this._handleListChange('entity_filters', index, 'entity', e.detail.value)}
                          ></ha-entity-picker>
                          <ha-select
-                            label="Filter"
+                            label=${this._localize('editor.entity_filters.filter')}
                             .value=${filter.filter}
                             @selected=${e => this._handleListChange('entity_filters', index, 'filter', e.target.value)}
                             @closed=${(ev) => ev.stopPropagation()}
                          >
-                            <mwc-list-item value="include">Einschließen</mwc-list-item>
-                            <mwc-list-item value="exclude">Ausschließen</mwc-list-item>
+                            <mwc-list-item value="include">${this._localize('editor.entity_filters.include')}</mwc-list-item>
+                            <mwc-list-item value="exclude">${this._localize('editor.entity_filters.exclude')}</mwc-list-item>
                          </ha-select>
-                        <ha-icon-button .path=${"M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"} @click=${() => this._removeListItem('entity_filters', index)}></ha-icon-button>
+                        <ha-icon-button .path=${MDI_DELETE_PATH} @click=${() => this._removeListItem('entity_filters', index)}></ha-icon-button>
                     </div>
                 `)}
-                 <mwc-button @click=${() => this._addListItem('entity_filters', {entity: '', filter: 'exclude'})}>Filter hinzufügen</mwc-button>
+                 <mwc-button @click=${() => this._addListItem('entity_filters', {entity: '', filter: 'exclude'})}>${this._localize('editor.entity_filters.add')}</mwc-button>
             </div>
         `;
     }
@@ -659,10 +764,12 @@ if (!customElements.get("alert-center-card-editor")) {
 
 if (!customElements.get("alert-center-card")) {
   customElements.define("alert-center-card", AlertCenterCard);
+  // This is for legacy support and card picker.
+  const card = document.createElement('alert-center-card');
   window.customCards = window.customCards || [];
   window.customCards.push({
     type: "alert-center-card",
-    name: "Alert Center Card",
-    description: "Eine Karte zur Anzeige von Batterie-, Problem- und benutzerdefinierten Alerts.",
+    name: card.localize('card.title_default'),
+    description: card.localize('card.description'),
   });
 }
